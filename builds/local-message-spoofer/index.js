@@ -4522,7 +4522,7 @@
     (b.ui && b.ui.components) || {},
     { storage: _stor },
     (b.api && b.api.patcher) || b.patcher || {},
-    (b.metro && b.metro.common && b.metro.common.assets) || (b.ui && b.ui.assets) || {},
+    (b.ui && b.ui.assets) || (b.metro && b.metro.common && b.metro.common.assets) || {},
     b.utils || {},
   ];
 })()))
