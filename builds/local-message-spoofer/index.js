@@ -1,5 +1,10 @@
-var plugin = (function (U, n, l, v, e, y, B, k) {
+(plugin = (function (U, n, l, v, e, y, B, k) {
   "use strict";
+  try { console.log("[Spoofer] IIFE entered. metro=" + !!l + " findByProps=" + !!(l&&l.findByProps) + " React=" + !!(n&&n.React) + " storage=" + !!(e&&e.storage)); } catch(x) {}
+  if (!l || typeof l.findByProps !== "function") { l = Object.assign({}, l || {}); l.findByProps = function() { return undefined; }; l.findByStoreName = function() { return undefined; }; l.findByDisplayName = function() { return undefined; }; }
+  if (!n) n = {};
+  if (!n.React) try { n.React = l.findByProps("createElement") || (typeof React !== "undefined" ? React : null); } catch(x) {}
+  if (!n.ReactNative) try { n.ReactNative = l.findByProps("View", "Text", "TouchableOpacity"); } catch(x) {}
   var _RN0 = n.ReactNative || l.findByProps("View", "Text", "TouchableOpacity") || {};
   const _Forms = v.Forms || (function() {
     try { var m = l.findByProps("FormSection", "FormRow"); if (m && m.FormRow) return m; } catch(e) {}
@@ -4495,9 +4500,14 @@ var plugin = (function (U, n, l, v, e, y, B, k) {
   // It has: metro, ui, utils, api, plugin (per-plugin storage/manifest/logger)
   // globalThis.bunny is NOT set yet at plugin load time
   var b = null;
-  try { if (typeof bunny !== "undefined" && bunny) b = bunny; } catch(x) {}
+  try { if (typeof bunny !== "undefined" && bunny && bunny.metro) b = bunny; } catch(x) {}
+  if (!b) try { if (typeof vendetta !== "undefined" && vendetta && vendetta.metro) b = vendetta; } catch(x) {}
+  if (!b) try { if (typeof bunny !== "undefined" && bunny) b = bunny; } catch(x) {}
+  if (!b) try { if (typeof vendetta !== "undefined" && vendetta) b = vendetta; } catch(x) {}
   if (!b) try { if (typeof globalThis !== "undefined" && globalThis.bunny) b = globalThis.bunny; } catch(x) {}
   if (!b) try { if (typeof globalThis !== "undefined" && globalThis.vendetta) b = globalThis.vendetta; } catch(x) {}
+  if (!b) try { b = window.bunny; } catch(x) {}
+  if (!b) try { b = window.vendetta; } catch(x) {}
   if (!b) b = {};
   // Storage: Kettu uses plugin.createStorage(), Vendetta uses plugin.storage directly
   var _stor = {};
@@ -4515,4 +4525,4 @@ var plugin = (function (U, n, l, v, e, y, B, k) {
     (b.metro && b.metro.common && b.metro.common.assets) || (b.ui && b.ui.assets) || {},
     b.utils || {},
   ];
-})());
+})()))
