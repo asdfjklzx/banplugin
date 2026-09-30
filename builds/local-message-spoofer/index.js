@@ -6,6 +6,9 @@
   if (!n.React) try { n.React = l.findByProps("createElement") || (typeof React !== "undefined" ? React : null); } catch(x) {}
   if (!n.ReactNative) try { n.ReactNative = l.findByProps("View", "Text", "TouchableOpacity"); } catch(x) {}
   if (!B || typeof B.getAssetIDByName !== "function") { var _origB = B; B = { getAssetIDByName: function(name) { try { if (_origB && _origB.getAssetIDByName) return _origB.getAssetIDByName(name); } catch(x) {} try { var m = l.findByProps("getAssetIDByName"); if (m) return m.getAssetIDByName(name); } catch(x) {} return 0; }, getAssetByName: function(name) { try { if (_origB && _origB.getAssetByName) return _origB.getAssetByName(name); } catch(x) {} return null; }, find: function(f) { try { if (_origB && _origB.find) return _origB.find(f); } catch(x) {} return null; } }; }
+  var _useProxy = null;
+  try { if (typeof vendetta !== "undefined" && vendetta && vendetta.storage && typeof vendetta.storage.useProxy === "function") _useProxy = vendetta.storage.useProxy; } catch(x) {}
+  if (!_useProxy) try { if (typeof bunny !== "undefined" && bunny && bunny.storage && typeof bunny.storage.useProxy === "function") _useProxy = bunny.storage.useProxy; } catch(x) {}
   var _RN0 = n.ReactNative || l.findByProps("View", "Text", "TouchableOpacity") || {};
   const _Forms = v.Forms || (function() {
     try { var m = l.findByProps("FormSection", "FormRow"); if (m && m.FormRow) return m; } catch(e) {}
@@ -3074,6 +3077,7 @@
     );
   }
   function _settingsInner(props) {
+      try { if (_useProxy) _useProxy(e.storage); } catch(x) {}
       const [tick, setTick] = n.React.useState(0);
       const [tab, setTab] = n.React.useState(0);
       const _scrollRef = n.React.useRef(null);
