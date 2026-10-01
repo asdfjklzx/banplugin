@@ -382,20 +382,14 @@
   }
   function fakeFriendRequest(uid) {
     try {
-      if (!uid || !uid.trim()) { tt("Enter a User ID first"); return; }
-      uid = uid.trim();
+      uid = ("" + (uid || "")).trim();
+      if (!uid || !/^\d{5,}$/.test(uid)) return false;
       var u = null;
       try { u = j.getUser(uid); } catch {}
-      var username = "Unknown";
-      var discriminator = "0";
-      var avatar = null;
-      var globalName = null;
-      if (u) {
-        username = u.username || "Unknown";
-        discriminator = u.discriminator || "0";
-        avatar = u.avatar || null;
-        globalName = u.globalName || u.global_name || null;
-      }
+      var username = u ? (u.username || "Unknown") : "Unknown";
+      var discriminator = u ? (u.discriminator || "0") : "0";
+      var avatar = u ? (u.avatar || null) : null;
+      var globalName = u ? (u.globalName || u.global_name || null) : null;
       n.FluxDispatcher.dispatch({
         type: "RELATIONSHIP_ADD",
         relationship: {
@@ -414,10 +408,23 @@
           since: new Date().toISOString(),
         },
       });
-      tt("Fake friend request from " + (globalName || username));
+      return true;
     } catch (ex) {
-      tt("Failed: " + ex.message);
+      return false;
     }
+  }
+  function runBulkFakeRequests() {
+    var raw = ("" + (e.storage.sdmBulkList || "")).trim();
+    if (!raw) { tt("Add targets to the bulk list first."); return; }
+    var lines = raw.split(/\r?\n/);
+    var count = 0, fails = 0;
+    for (var i = 0; i < lines.length; i++) {
+      var uid = lines[i].trim().split(/\s+/)[0];
+      if (!uid || !/^\d{5,}$/.test(uid)) { if (lines[i].trim()) fails++; continue; }
+      if (fakeFriendRequest(uid)) count++;
+      else fails++;
+    }
+    tt("Bulk friend requests: " + count + " sent" + (fails ? ", " + fails + " failed" : "") + ".");
   }
   let selfActive = !1,
     selfId = null,
@@ -3186,7 +3193,7 @@
               n.React.createElement(
                 _View,
                 { style: { flexDirection: "row", paddingHorizontal: 6, marginBottom: 10, marginTop: 4 } },
-                ["Message", "Time", "Convo", "SDM", "Saved", "Friend"].map(function (lbl, i) {
+                ["Message", "Time", "Convo", "SDM", "Saved"].map(function (lbl, i) {
                   return n.React.createElement(
                     _Touch,
                     {
@@ -3853,6 +3860,12 @@
             onPress: async function () { await runBulkSDM(); setTick(function (kk) { return kk + 1; }); },
           }),
           n.React.createElement(A, {
+            label: "Bulk Fake Friend Requests",
+            subLabel: "Sends a local-only incoming friend request from every user in the bulk list.",
+            leading: A.Icon ? n.React.createElement(A.Icon, { source: B.getAssetIDByName("ic_add_friend") }) : void 0,
+            onPress: function () { runBulkFakeRequests(); setTick(function (kk) { return kk + 1; }); },
+          }),
+          n.React.createElement(A, {
             label: "Clear Bulk List",
             leading: A.Icon ? n.React.createElement(A.Icon, { source: B.getAssetIDByName("ic_trash_24px") }) : void 0,
             onPress: function () { e.storage.sdmBulkList = ""; tt("Cleared bulk list."); setTick(function (kk) { return kk + 1; }); },
@@ -3900,59 +3913,6 @@
               setTick(function (kk) {
                 return kk + 1;
               });
-            },
-          }),
-        )
-                  )
-                ),
-                n.React.createElement(
-                  _View,
-                  { style: { width: _width } },
-                  n.React.createElement(
-                    _SV,
-                    { style: { maxHeight: 560 }, contentContainerStyle: { paddingTop: 8, paddingHorizontal: 14, paddingBottom: 180 }, keyboardShouldPersistTaps: "handled", nestedScrollEnabled: true },
-        n.React.createElement(
-          N,
-          { title: "Fake Friend Request" },
-          n.React.createElement(f, {
-            key: "fruid" + tick,
-            title: "User ID",
-            placeholder: "Enter a User ID to fake a friend request from",
-            value: e.storage.friendReqId || "",
-            onChange: function (o) {
-              e.storage.friendReqId = o || "";
-            },
-          }),
-          n.React.createElement(A, {
-            label: "Send Fake Friend Request",
-            subLabel: "Creates a local-only incoming friend request notification from the given user.",
-            leading: A.Icon
-              ? n.React.createElement(A.Icon, {
-                  source: B.getAssetIDByName("ic_add_friend"),
-                })
-              : void 0,
-            onPress: function () {
-              fakeFriendRequest(e.storage.friendReqId || "");
-              setTick(function (kk) { return kk + 1; });
-            },
-          }),
-          n.React.createElement(A, {
-            label: "Fill from current chat",
-            subLabel: "Use the other person in this DM.",
-            leading: A.Icon
-              ? n.React.createElement(A.Icon, {
-                  source: B.getAssetIDByName("ic_members"),
-                })
-              : void 0,
-            onPress: function () {
-              var id = fillFromChat();
-              if (id) {
-                e.storage.friendReqId = id;
-                setTick(function (kk) { return kk + 1; });
-                tt("Filled User ID: " + id);
-              } else {
-                tt("Couldn't find a user here. Open a DM first.");
-              }
             },
           }),
         )
@@ -4539,6 +4499,12 @@
             onPress: async function () { await runBulkSDM(); setTick(function (kk) { return kk + 1; }); },
           }),
           n.React.createElement(A, {
+            label: "Bulk Fake Friend Requests",
+            subLabel: "Sends a local-only incoming friend request from every user in the bulk list.",
+            leading: A.Icon ? n.React.createElement(A.Icon, { source: B.getAssetIDByName("ic_add_friend") }) : void 0,
+            onPress: function () { runBulkFakeRequests(); setTick(function (kk) { return kk + 1; }); },
+          }),
+          n.React.createElement(A, {
             label: "Clear Bulk List",
             leading: A.Icon ? n.React.createElement(A.Icon, { source: B.getAssetIDByName("ic_trash_24px") }) : void 0,
             onPress: function () { e.storage.sdmBulkList = ""; tt("Cleared bulk list."); setTick(function (kk) { return kk + 1; }); },
@@ -4578,51 +4544,6 @@
               setTick(function (kk) {
                 return kk + 1;
               });
-            },
-          }),
-        ),
-        n.React.createElement(
-          N,
-          { title: "Fake Friend Request" },
-          n.React.createElement(f, {
-            key: "fruid" + tick,
-            title: "User ID",
-            placeholder: "Enter a User ID to fake a friend request from",
-            value: e.storage.friendReqId || "",
-            onChange: function (o) {
-              e.storage.friendReqId = o || "";
-            },
-          }),
-          n.React.createElement(A, {
-            label: "Send Fake Friend Request",
-            subLabel: "Creates a local-only incoming friend request notification from the given user.",
-            leading: A.Icon
-              ? n.React.createElement(A.Icon, {
-                  source: B.getAssetIDByName("ic_add_friend"),
-                })
-              : void 0,
-            onPress: function () {
-              fakeFriendRequest(e.storage.friendReqId || "");
-              setTick(function (kk) { return kk + 1; });
-            },
-          }),
-          n.React.createElement(A, {
-            label: "Fill from current chat",
-            subLabel: "Use the other person in this DM.",
-            leading: A.Icon
-              ? n.React.createElement(A.Icon, {
-                  source: B.getAssetIDByName("ic_members"),
-                })
-              : void 0,
-            onPress: function () {
-              var id = fillFromChat();
-              if (id) {
-                e.storage.friendReqId = id;
-                setTick(function (kk) { return kk + 1; });
-                tt("Filled User ID: " + id);
-              } else {
-                tt("Couldn't find a user here. Open a DM first.");
-              }
             },
           }),
         )
