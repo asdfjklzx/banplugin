@@ -4579,14 +4579,20 @@
   } catch(x) {}
   if (!_stor || (typeof _stor === "object" && Object.keys(_stor).length === 0 && !(_stor.__proto__ && _stor.__proto__.__lookupGetter__))) {
     try {
-      var _cp = (b.storage && b.storage.createProxy) || null;
-      var _cb = (b.storage && b.storage.createMMKVBackend) || null;
-      if (!_cp) try { _cp = (typeof vendetta !== "undefined" && vendetta && vendetta.storage && vendetta.storage.createProxy) || null; } catch(x) {}
-      if (!_cb) try { _cb = (typeof vendetta !== "undefined" && vendetta && vendetta.storage && vendetta.storage.createMMKVBackend) || null; } catch(x) {}
-      if (!_cp) try { _cp = (typeof bunny !== "undefined" && bunny && bunny.storage && bunny.storage.createProxy) || null; } catch(x) {}
-      if (!_cb) try { _cb = (typeof bunny !== "undefined" && bunny && bunny.storage && bunny.storage.createMMKVBackend) || null; } catch(x) {}
-      if (typeof _cp === "function" && typeof _cb === "function") {
-        _stor = _cp(_cb("local-message-spoofer"));
+      var _s = b.storage || null;
+      if (!_s) try { _s = (typeof vendetta !== "undefined" && vendetta && vendetta.storage) || null; } catch(x) {}
+      if (!_s) try { _s = (typeof bunny !== "undefined" && bunny && bunny.storage) || null; } catch(x) {}
+      if (!_s) try { _s = (typeof window !== "undefined" && window.vendetta && window.vendetta.storage) || null; } catch(x) {}
+      if (!_s) try { _s = (typeof window !== "undefined" && window.bunny && window.bunny.storage) || null; } catch(x) {}
+      if (_s) {
+        if (typeof _s.createStorage === "function" && typeof _s.createMMKVBackend === "function") {
+          _stor = _s.createStorage(_s.createMMKVBackend("local-message-spoofer"));
+        } else if (typeof _s.createProxy === "function" && typeof _s.createMMKVBackend === "function") {
+          var _backend = _s.createMMKVBackend("local-message-spoofer");
+          _stor = _s.createProxy(_backend);
+          if (typeof _s.wrapSync === "function") try { _stor = _s.wrapSync(_stor); } catch(x) {}
+          else if (typeof _s.awaitSyncWrapper === "function") try { _s.awaitSyncWrapper(_stor); } catch(x) {}
+        }
       }
     } catch(x) {}
   }
