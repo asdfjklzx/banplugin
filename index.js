@@ -1593,7 +1593,7 @@
   var J = {
     onLoad() {
       try { console.log("[Spoofer] onLoad: React=" + !!n.React + " RN=" + !!_RN0.View + " Forms=" + !!_Forms.FormRow + " findByProps=" + !!l.findByProps + " patcher=" + !!y.after + " FluxDispatcher=" + !!n.FluxDispatcher + " storage=" + !!e.storage); } catch(x) { console.log("[Spoofer] onLoad: diag failed: " + x); }
-      try { if (!e.storage.sdmScript) e.storage.sdmScript = "Hey! I saw you in [server], wanted to reach out!"; } catch {}
+      try { if (typeof e.storage.sdmScript === "undefined") e.storage.sdmScript = "Hey! I saw you in [server], wanted to reach out!"; } catch {}
       try {
         K.forEach(function (fn) {
           try {
@@ -4572,12 +4572,24 @@
   if (!b) try { b = window.bunny; } catch(x) {}
   if (!b) try { b = window.vendetta; } catch(x) {}
   if (!b) b = {};
-  // Storage: Kettu uses plugin.createStorage(), Vendetta uses plugin.storage directly
   var _stor = {};
   try {
     if (b.plugin && typeof b.plugin.createStorage === "function") _stor = b.plugin.createStorage();
     else if (b.plugin && b.plugin.storage) _stor = b.plugin.storage;
   } catch(x) {}
+  if (!_stor || (typeof _stor === "object" && Object.keys(_stor).length === 0 && !(_stor.__proto__ && _stor.__proto__.__lookupGetter__))) {
+    try {
+      var _cp = (b.storage && b.storage.createProxy) || null;
+      var _cb = (b.storage && b.storage.createMMKVBackend) || null;
+      if (!_cp) try { _cp = (typeof vendetta !== "undefined" && vendetta && vendetta.storage && vendetta.storage.createProxy) || null; } catch(x) {}
+      if (!_cb) try { _cb = (typeof vendetta !== "undefined" && vendetta && vendetta.storage && vendetta.storage.createMMKVBackend) || null; } catch(x) {}
+      if (!_cp) try { _cp = (typeof bunny !== "undefined" && bunny && bunny.storage && bunny.storage.createProxy) || null; } catch(x) {}
+      if (!_cb) try { _cb = (typeof bunny !== "undefined" && bunny && bunny.storage && bunny.storage.createMMKVBackend) || null; } catch(x) {}
+      if (typeof _cp === "function" && typeof _cb === "function") {
+        _stor = _cp(_cb("local-message-spoofer"));
+      }
+    } catch(x) {}
+  }
   return [
     {},
     (b.metro && b.metro.common) || {},
