@@ -4572,30 +4572,24 @@
   if (!b) try { b = window.bunny; } catch(x) {}
   if (!b) try { b = window.vendetta; } catch(x) {}
   if (!b) b = {};
-  var _stor = {};
+  var _stor = null;
   try {
-    if (b.plugin && typeof b.plugin.createStorage === "function") _stor = b.plugin.createStorage();
-    else if (b.plugin && b.plugin.storage) _stor = b.plugin.storage;
+    if (b.plugin && b.plugin.storage) _stor = b.plugin.storage;
   } catch(x) {}
-  if (!_stor || (typeof _stor === "object" && Object.keys(_stor).length === 0 && !(_stor.__proto__ && _stor.__proto__.__lookupGetter__))) {
+  if (!_stor) {
     try {
       var _s = b.storage || null;
       if (!_s) try { _s = (typeof vendetta !== "undefined" && vendetta && vendetta.storage) || null; } catch(x) {}
       if (!_s) try { _s = (typeof bunny !== "undefined" && bunny && bunny.storage) || null; } catch(x) {}
       if (!_s) try { _s = (typeof window !== "undefined" && window.vendetta && window.vendetta.storage) || null; } catch(x) {}
       if (!_s) try { _s = (typeof window !== "undefined" && window.bunny && window.bunny.storage) || null; } catch(x) {}
-      if (_s) {
-        if (typeof _s.createStorage === "function" && typeof _s.createMMKVBackend === "function") {
-          _stor = _s.createStorage(_s.createMMKVBackend("local-message-spoofer"));
-        } else if (typeof _s.createProxy === "function" && typeof _s.createMMKVBackend === "function") {
-          var _backend = _s.createMMKVBackend("local-message-spoofer");
-          _stor = _s.createProxy(_backend);
-          if (typeof _s.wrapSync === "function") try { _stor = _s.wrapSync(_stor); } catch(x) {}
-          else if (typeof _s.awaitSyncWrapper === "function") try { _s.awaitSyncWrapper(_stor); } catch(x) {}
-        }
+      if (_s && typeof _s.createProxy === "function" && typeof _s.createMMKVBackend === "function") {
+        _stor = _s.createProxy(_s.createMMKVBackend("local-message-spoofer"));
+        if (typeof _s.wrapSync === "function") try { _stor = _s.wrapSync(_stor); } catch(x) {}
       }
     } catch(x) {}
   }
+  if (!_stor) _stor = {};
   return [
     {},
     (b.metro && b.metro.common) || {},
